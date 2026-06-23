@@ -1,118 +1,86 @@
 # HybridPOC
 
-A proof-of-concept hybrid mobile app that demonstrates **Camera**, **Geolocation**, and **Push Notifications** running across browser, Android, and iOS from a single codebase — plus an admin dashboard to inspect all captured data in real time.
+A proof-of-concept hybrid mobile app demonstrating **Camera**, **Geolocation**, and **Push Notifications** — built with Apache Cordova, Vue 3, Quasar, and a FastAPI backend. Runs entirely in your browser, no phone or emulator required.
 
-Built with Apache Cordova, Vue 3, Quasar, and a FastAPI backend. The whole thing runs locally in about 30 seconds.
+---
+
+## Run it in one click — GitHub Codespaces
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/hritishmahajan/hybrid-poc)
+
+1. Click the button above (or go to **Code → Codespaces → Create codespace on main**)
+2. Wait ~60 seconds for the environment to build — dependencies install automatically
+3. Open **two terminals** inside the Codespace and run:
+
+**Terminal 1 — backend:**
+```bash
+cd server
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**Terminal 2 — frontend:**
+```bash
+cd app
+npm run dev -- --host
+```
+
+4. Codespaces will pop up port-forward notifications. Open the **port 5173** preview to use the app, and **port 8000/admin** to open the admin dashboard.
+
+> The frontend auto-detects the backend on `localhost:8000`. No configuration needed — it just works.
 
 ---
 
 ## What this demonstrates
 
-| Feature | Native (Cordova) | Browser fallback |
-|---------|-----------------|-----------------|
+| Feature | Native (Cordova) | Browser / Codespaces |
+|---------|-----------------|----------------------|
 | Camera | `cordova-plugin-camera` → base64 JPEG | `<input type="file" capture="environment">` |
 | Geolocation | `cordova-plugin-geolocation` | `navigator.geolocation` |
 | Push notifications | PhoneGap Push (FCM / APNs) | Web Notifications API |
 
-All three features work in the browser during development — no phone or emulator needed to see them in action. The app automatically detects whether Cordova is available and falls back gracefully.
+All three features fall back gracefully to standard browser APIs when Cordova isn't present, so everything is fully interactive inside a Codespace.
+
+Every action (photo taken, location captured, notification sent) is logged to the FastAPI backend and shows up live in the admin dashboard.
 
 ---
 
 ## Project layout
 
 ```
-hybrid-poc-repo/
-├── app/          # Vue 3 + Quasar frontend (Cordova shell)
-└── server/       # FastAPI backend + admin dashboard
+hybrid-poc/
+├── .devcontainer/
+│   └── devcontainer.json   # Codespaces config — installs everything automatically
+├── app/                    # Vue 3 + Quasar frontend (Cordova shell)
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── HomePage.vue        # device info + feature overview
+│   │   │   ├── CameraPage.vue      # photo capture and gallery
+│   │   │   ├── LocationPage.vue    # GPS, live watch, OSM map
+│   │   │   └── NotifyPage.vue      # local and push notifications
+│   │   └── composables/
+│   │       ├── useCamera.js        # Cordova camera + browser file picker
+│   │       ├── useGeolocation.js   # GPS with web fallback
+│   │       ├── useApi.js           # posts data to the backend silently
+│   │       └── usePushNotifications.js
+│   ├── cordova/config.xml          # Cordova app config and plugin list
+│   └── package.json
+└── server/                 # FastAPI backend
+    ├── main.py             # REST endpoints + serves admin.html
+    ├── database.py         # SQLAlchemy models (SQLite)
+    ├── schemas.py          # Pydantic schemas
+    ├── admin.html          # admin dashboard (no build step)
+    └── requirements.txt
 ```
-
-### `app/` — the mobile app
-
-```
-src/
-├── main.js                     # boots after Cordova deviceready fires
-├── App.vue                     # drawer + bottom tab layout
-├── router/index.js             # hash-mode router (required for Cordova)
-├── pages/
-│   ├── HomePage.vue            # device info + feature list
-│   ├── CameraPage.vue          # photo capture and gallery picker
-│   ├── LocationPage.vue        # GPS coordinates, live watch, OSM map
-│   └── NotifyPage.vue          # local and push notification demo
-└── composables/
-    ├── useCamera.js            # Cordova camera + browser file picker
-    ├── useGeolocation.js       # GPS with Cordova / web fallback
-    ├── useApi.js               # posts data silently to the backend
-    └── usePushNotifications.js # PhoneGap Push + Web Notifications
-```
-
-### `server/` — FastAPI backend
-
-```
-main.py        # REST endpoints + admin dashboard route
-database.py    # SQLAlchemy models (SQLite)
-schemas.py     # Pydantic request/response schemas
-admin.html     # single-file admin UI (no build step needed)
-```
-
-The backend stores every location ping, captured photo (as base64), and notification record. The admin dashboard at `/admin` lets you browse and delete everything.
 
 ---
 
-## Running locally
+## Admin dashboard
 
-### 1. Start the backend
+Once the backend is running, open `http://localhost:8000/admin` (or the Codespaces forwarded URL for port 8000 + `/admin`).
 
-```bash
-cd server
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
+The dashboard shows every captured record — locations with coordinates, photos in a grid, notification history — and lets you delete individual entries. No login needed on localhost.
 
-Server starts at `http://localhost:8000`.
-Admin dashboard: `http://localhost:8000/admin`
-API docs (Swagger): `http://localhost:8000/docs`
-
-### 2. Start the frontend
-
-```bash
-cd app
-npm install
-npm run dev
-```
-
-App opens at `http://localhost:5173`. Use the camera, grab your GPS, fire a notification — it all logs to the backend automatically.
-
-> No API key is required on localhost. The server skips auth for local requests.
-
----
-
-## Building for Android / iOS
-
-### Prerequisites
-
-- Android Studio + Android SDK + Java 17
-- `cordova` CLI: `npm install -g cordova`
-- (iOS) macOS + Xcode 15+
-
-```bash
-# Android debug APK
-cd app && npm run build:android
-
-# iOS (macOS only)
-cd app && npm run build:ios
-```
-
-APK output: `app/cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk`
-
----
-
-## CI/CD
-
-`.github/workflows/build.yml` runs on every push to `main`:
-
-1. **Web build** — `npm run build` → uploads `www/` as an artifact
-2. **Android** — installs Cordova platform, builds debug APK, uploads artifact
-3. **iOS** — builds simulator `.app`, uploads artifact
+API docs (auto-generated by FastAPI): `http://localhost:8000/docs`
 
 ---
 
@@ -126,39 +94,41 @@ APK output: `app/cordova/platforms/android/app/build/outputs/apk/debug/app-debug
 | Native shell | Apache Cordova |
 | Routing | Vue Router 4 (hash history) |
 | Backend | FastAPI + SQLAlchemy |
-| Database | SQLite |
+| Database | SQLite (file, zero config) |
 | CI/CD | GitHub Actions |
 
 ---
 
-## Cordova plugins
+## Building for Android / iOS (local only)
 
-| Plugin | What it does |
-|--------|-------------|
-| `cordova-plugin-device` | Platform + model info on the home screen |
-| `cordova-plugin-camera` | Photo capture and gallery access |
+You'll need Android Studio + Java 17 (and Xcode on macOS for iOS). Not required to evaluate the POC — everything works in the browser.
+
+```bash
+# Android debug APK
+cd app && npm run build:android
+
+# iOS simulator (macOS only)
+cd app && npm run build:ios
+```
+
+Cordova plugins used:
+
+| Plugin | Feature |
+|--------|---------|
+| `cordova-plugin-device` | Platform and model info on the home screen |
+| `cordova-plugin-camera` | Photo capture and gallery picker |
 | `cordova-plugin-geolocation` | GPS coordinates and live position watch |
-| `phonegap-plugin-push` | FCM (Android) and APNs (iOS) push registration |
+| `phonegap-plugin-push` | FCM (Android) / APNs (iOS) push registration |
 | `cordova-plugin-local-notification` | Scheduled local alerts |
 
 ---
 
-## Firebase push notifications (production setup)
+## CI/CD
 
-1. Create a Firebase project and download `google-services.json` (Android) / `GoogleService-Info.plist` (iOS)
-2. Replace `YOUR_FIREBASE_SENDER_ID` in `app/cordova/config.xml` with your FCM Sender ID
-3. Place `google-services.json` in `app/cordova/platforms/android/app/`
-
----
-
-## Environment variables
-
-Create `app/.env.local` to point the frontend at a non-local server:
-
-```
-VITE_API_URL=https://your-server.example.com
-VITE_API_KEY=hybridpoc-secret-2025
-```
+`.github/workflows/build.yml` runs on every push to `main` and produces:
+1. A web build (`www/` artifact)
+2. An Android debug APK
+3. An iOS simulator `.app`
 
 ---
 

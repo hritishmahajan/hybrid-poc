@@ -1,0 +1,31 @@
+{
+  "name": "HybridPOC",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+
+  "postCreateCommand": "cd app && npm install && cd ../server && pip install -r requirements.txt",
+
+  "forwardPorts": [5173, 8000],
+  "portsAttributes": {
+    "5173": {
+      "label": "Frontend (Vite)",
+      "onAutoForward": "openPreview"
+    },
+    "8000": {
+      "label": "Backend (FastAPI)",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Vue.volar",
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  }
+}
