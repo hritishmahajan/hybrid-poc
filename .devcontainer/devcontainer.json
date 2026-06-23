@@ -1,6 +1,9 @@
 {
   "name": "HybridPOC",
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" }
+  },
 
   "postCreateCommand": "cd app && npm install && cd ../server && pip install -r requirements.txt",
 
