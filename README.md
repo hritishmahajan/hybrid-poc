@@ -15,6 +15,8 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/hritishmahajan/hybrid-poc)
 &nbsp;
+[![Download APK](https://img.shields.io/badge/Download-Android_APK-3DDC84?logo=android&logoColor=white)](https://github.com/hritishmahajan/hybrid-poc/releases/latest/download/app-debug.apk)
+&nbsp;
 ![Vue 3](https://img.shields.io/badge/Vue-3.x-4FC08D?logo=vue.js&logoColor=white)
 ![Quasar](https://img.shields.io/badge/Quasar-2.x-1976D2?logo=quasar&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.137-009688?logo=fastapi&logoColor=white)
@@ -27,26 +29,52 @@
 
 ---
 
-## ⚡ Try it right now — no install, no setup
+## ⚡ Run it — share it — see results live
 
-> Click the button → wait 60 seconds → you're running the full stack in your browser.
+> One Codespace hosts everything. You share the frontend link, anyone on any device opens it, and all their captured data appears in your admin dashboard in real time.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   GitHub Codespace                          │
+│                                                             │
+│   :8000  FastAPI  ──────────────────────────► /admin        │
+│      ▲                                    (your dashboard)  │
+│      │ data                                                 │
+│   :5173  Vite ──► PUBLIC LINK ──► anyone's phone/laptop     │
+│                                   camera, GPS, notifications│
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Step 1 — Launch the Codespace
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/hritishmahajan/hybrid-poc)
 
-Once the Codespace loads, open **two terminals**:
+Dependencies install automatically. When the terminal is ready, run:
 
 ```bash
-# Terminal 1 — start the backend
-cd server && uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+bash start.sh
 ```
 
-```bash
-# Terminal 2 — start the frontend
-cd app && npm run dev -- --host
-```
+That's it. Both servers start, and the frontend is already configured to talk to the backend using the correct public Codespaces URL.
 
-Codespaces auto-forwards the ports. Click the **port 5173** preview link → you're in.
-Want to see captured data? Open the forwarded **port 8000** link and add `/admin`.
+### Step 2 — Make both ports public
+
+In the **Ports** tab (bottom panel in VS Code), right-click each port and set **Port Visibility → Public**:
+
+| Port | What it is |
+|------|-----------|
+| `5173` | Frontend — **share this link with anyone** |
+| `8000` | Backend — open `/admin` to see captured data |
+
+> Ports are set to public automatically via `.devcontainer/devcontainer.json`, but if it doesn't take effect, set them manually here.
+
+### Step 3 — Share the link
+
+Copy the public URL for port `5173` from the Ports tab and send it to anyone. They open it on their phone or laptop — camera, GPS, and notifications all work. Every action logs to your SQLite database via the backend.
+
+### Step 4 — Watch results in the admin
+
+Open the port `8000` public URL in your browser and add `/admin`. You'll see every location ping, photo captured, and notification sent — updating as people use the app.
 
 ---
 
@@ -387,10 +415,38 @@ Features: live stats, paginated tables, photo grid with full-size modal, one-cli
 
 ---
 
-## 📲 Building for a real device
+## 📲 Install on a real device
+
+### Android — download the APK
+
+Every push to `main` automatically builds a debug APK and attaches it to the GitHub Release.
+
+[![Download APK](https://img.shields.io/badge/Download-Android_APK-3DDC84?logo=android&logoColor=white)](https://github.com/hritishmahajan/hybrid-poc/releases/latest/download/app-debug.apk)
+
+**Direct link:**
+```
+https://github.com/hritishmahajan/hybrid-poc/releases/latest/download/app-debug.apk
+```
+
+To install:
+1. Download the APK on your Android device (tap the link above from your phone)
+2. Go to **Settings → Install unknown apps** and allow your browser
+3. Open the downloaded `.apk` and tap Install
+
+> This is a debug build — it's not signed for the Play Store. It works on any Android device for testing purposes.
+
+### iOS
+
+iOS requires a signed `.ipa` and an Apple Developer account ($99/year) to install on a real device. The CI build produces a simulator `.app` for local testing only.
+
+To run on an iOS simulator locally:
+```bash
+cd app && npm run build:ios
+# then open in Xcode: app/cordova/platforms/ios/
+```
 
 <details>
-<summary><b>Android</b> — click to expand</summary>
+<summary><b>Build Android locally</b></summary>
 
 **Prerequisites:** Android Studio · Android SDK · Java 17 · `npm install -g cordova`
 
@@ -399,28 +455,10 @@ cd app
 npm run build:android
 # APK → cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
 ```
-
-**Run on a connected device:**
-```bash
-npm run run:android
-```
 </details>
 
 <details>
-<summary><b>iOS</b> — click to expand</summary>
-
-**Prerequisites:** macOS · Xcode 15+ · Apple Developer account (for device builds)
-
-```bash
-cd app
-npm run build:ios
-# Run on simulator:
-npm run emulate:ios
-```
-</details>
-
-<details>
-<summary><b>Firebase Push Notifications (production)</b> — click to expand</summary>
+<summary><b>Firebase Push Notifications (production)</b></summary>
 
 1. Create a Firebase project
 2. Download `google-services.json` (Android) / `GoogleService-Info.plist` (iOS)

@@ -5,27 +5,25 @@
     "ghcr.io/devcontainers/features/node:1": { "version": "20" }
   },
 
-  "postCreateCommand": "cd app && npm install && cd ../server && pip install -r requirements.txt",
+  "postCreateCommand": "bash setup.sh",
 
   "forwardPorts": [5173, 8000],
   "portsAttributes": {
     "5173": {
-      "label": "Frontend (Vite)",
-      "onAutoForward": "openPreview"
+      "label": "Frontend — share this link",
+      "onAutoForward": "openPreview",
+      "visibility": "public"
     },
     "8000": {
-      "label": "Backend (FastAPI)",
-      "onAutoForward": "notify"
+      "label": "Backend API",
+      "onAutoForward": "notify",
+      "visibility": "public"
     }
   },
 
   "customizations": {
     "vscode": {
-      "extensions": [
-        "Vue.volar",
-        "ms-python.python",
-        "ms-python.vscode-pylance"
-      ],
+      "extensions": ["Vue.volar", "ms-python.python"],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python"
       }
