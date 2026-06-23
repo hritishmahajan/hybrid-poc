@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HybridPOC — ADMIN</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+    :root {
+      --mono: 'IBM Plex Mono', monospace;
+      --border: 2px solid #000;
+      --border-thin: 1px solid #e0e0e0;
+    }
+
+    body { font-family: var(--mono); background: #fff; color: #000; min-height: 100vh }
+
+    /* ── Header ── */
+    header { background: #000; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100 }
+    .hdr-title { color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 3px }
+    .hdr-badge { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; background: #fff; color: #000; padding: 3px 8px }
+    .hdr-status { font-size: 9px; color: #666; letter-spacing: 1px; display: flex; align-items: center; gap: 6px }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #666 }
+    .status-dot.online { background: #4ade80 }
+
+    /* ── Login gate ── */
+    #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px }
+    .login-box { border: var(--border); padding: 32px; width: 100%; max-width: 400px; box-shadow: 6px 6px 0 #000 }
+    .login-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: #888; margin-bottom: 6px }
+    .login-title { font-size: 1.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 24px }
+    .login-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: #888; display: block; margin-bottom: 6px }
+    .login-input { width: 100%; border: var(--border); padding: 10px 12px; font-family: var(--mono); font-size: 13px; outline: none; margin-bottom: 10px }
+    .login-input:focus { box-shadow: 3px 3px 0 #000 }
+    .login-btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 2px; cursor: pointer; margin-top: 6px; box-shadow: 4px 4px 0 #555 }
+    .login-btn:hover { box-shadow: 6px 6px 0 #333 }
+    .login-btn:active { transform: translate(4px,4px); box-shadow: none }
+    .login-error { font-size: 10px; color: #000; background: #f5f5f5; border: 1px solid #000; padding: 8px 10px; margin-top: 10px; display: none }
+
+    /* ── Main layout ── */
+    #app { display: none }
+    .layout { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 48px) }
+
+    /* ── Sidebar ── */
+    .sidebar { border-right: var(--border); padding-top: 0 }
+    .sidebar-section { font-size: 8px; font-weight: 700; letter-spacing: 2px; color: #888; padding: 14px 16px 6px; border-bottom: var(--border-thin) }
+    .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: var(--border-thin); cursor: pointer; transition: background 0.1s; font-size: 11px; font-weight: 700; letter-spacing: 0.5px }
+    .sidebar-item:hover { background: #f5f5f5 }
+    .sidebar-item.active { background: #000; color: #fff }
+    .sidebar-num { font-size: 9px; font-weight: 700; color: #bbb; min-width: 20px }
+    .sidebar-item.active .sidebar-num { color: #666 }
+    .sidebar-count { margin-left: auto; font-size: 9px; background: #e0e0e0; color: #555; padding: 2px 6px }
+    .sidebar-item.active .sidebar-count { background: #333; color: #aaa }
+
+    /* ── Content ── */
+    .content { padding: 0 }
+
+    /* ── Stats bar ── */
+    .stats-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: var(--border) }
+    .stat-cell { padding: 16px 20px; border-right: var(--border-thin) }
+    .stat-cell:last-child { border-right: none }
+    .stat-label { font-size: 8px; font-weight: 700; letter-spacing: 1.5px; color: #888; margin-bottom: 6px }
+    .stat-val   { font-size: 2rem; font-weight: 700; letter-spacing: -1px }
+
+    /* ── Table ── */
+    .table-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: var(--border); background: #f5f5f5 }
+    .table-title { font-size: 10px; font-weight: 700; letter-spacing: 2px }
+    .refresh-btn { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 6px 12px; border: 1px solid #000; background: #fff; cursor: pointer }
+    .refresh-btn:hover { background: #000; color: #fff }
+
+    table { width: 100%; border-collapse: collapse }
+    thead { background: #000; color: #fff }
+    th { text-align: left; padding: 10px 16px; font-size: 8px; font-weight: 700; letter-spacing: 1.5px; border-right: 1px solid #333 }
+    th:last-child { border-right: none }
+    td { padding: 10px 16px; font-size: 11px; border-bottom: var(--border-thin); border-right: var(--border-thin); vertical-align: top }
+    td:last-child { border-right: none }
+    tr:hover td { background: #f9f9f9 }
+    .td-mono { font-family: var(--mono); font-size: 10px }
+    .td-muted { color: #888; font-size: 10px }
+    .delete-btn { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 4px 8px; border: 1px solid #000; background: #fff; cursor: pointer; color: #000 }
+    .delete-btn:hover { background: #000; color: #fff }
+    .tag { font-size: 8px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; background: #000; color: #fff; display: inline-block }
+    .tag.sent     { background: #000 }
+    .tag.failed   { background: #555 }
+
+    /* Photo grid */
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0; border-bottom: var(--border) }
+    .photo-cell { border-right: var(--border-thin); border-bottom: var(--border-thin); position: relative; cursor: pointer }
+    .photo-img  { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #f0f0f0; filter: grayscale(30%) }
+    .photo-meta { padding: 6px 8px; background: #f5f5f5; border-top: 1px solid #e0e0e0 }
+    .photo-id   { font-size: 8px; font-weight: 700; letter-spacing: 1px; color: #888 }
+    .photo-size { font-size: 9px; color: #000 }
+    .photo-del  { position: absolute; top: 6px; right: 6px; font-family: var(--mono); font-size: 8px; font-weight: 700; padding: 3px 6px; background: #000; color: #fff; border: none; cursor: pointer; opacity: 0; transition: opacity 0.15s }
+    .photo-cell:hover .photo-del { opacity: 1 }
+
+    /* Empty state */
+    .empty { padding: 48px 20px; text-align: center; border-bottom: var(--border) }
+    .empty-icon { font-size: 2rem; font-weight: 700; color: #ccc; margin-bottom: 12px }
+    .empty-text { font-size: 13px; font-weight: 700; margin-bottom: 6px }
+    .empty-sub  { font-size: 10px; color: #888 }
+
+    /* Loading */
+    .loading-row { padding: 20px; text-align: center; font-size: 11px; font-weight: 700; color: #888; border-bottom: var(--border-thin) }
+    .blink { animation: blink 1s step-end infinite }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* Map mini */
+    .coord-link { font-size: 10px; color: #000; text-decoration: underline; cursor: pointer; display: block; margin-top: 4px }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center }
+    .modal-overlay.open { display: flex }
+    .modal-box { background: #fff; border: var(--border); box-shadow: 8px 8px 0 #000; max-width: 90vw; max-height: 90vh; overflow: auto }
+    .modal-header { background: #000; color: #fff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between }
+    .modal-title { font-size: 10px; font-weight: 700; letter-spacing: 2px }
+    .modal-close { background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; font-family: var(--mono); font-weight: 700 }
+    .modal-img { max-width: 80vw; max-height: 70vh; display: block }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-eyebrow">HYBRIDPOC</div>
+    <div class="login-title">ADMIN<br>PANEL</div>
+    <label class="login-label">API ENDPOINT</label>
+    <input class="login-input" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000" />
+    <div style="font-size:10px;color:#888;font-family:var(--mono);margin-top:8px">Connects to your local server — no key needed on localhost</div>
+    <button class="login-btn" onclick="login()">CONNECT →</button>
+    <div class="login-error" id="login-error">CONNECTION FAILED — check URL and API key</div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="hdr-title">HYBRIDPOC / ADMIN</div>
+      <div class="hdr-badge">v1.0</div>
+    </div>
+    <div class="hdr-status">
+      <div class="status-dot online" id="status-dot"></div>
+      <span id="status-text">CONNECTED</span>
+      <span style="color:#444;margin-left:8px" id="api-endpoint-label"></span>
+    </div>
+    <button style="font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1px;background:none;border:1px solid #555;color:#888;padding:4px 10px;cursor:pointer" onclick="logout()">LOGOUT</button>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-section">VIEWS</div>
+      <div class="sidebar-item active" onclick="showTab('overview')" id="tab-overview">
+        <span class="sidebar-num">00</span> OVERVIEW
+      </div>
+      <div class="sidebar-item" onclick="showTab('locations')" id="tab-locations">
+        <span class="sidebar-num">01</span> LOCATIONS
+        <span class="sidebar-count" id="count-loc">—</span>
+      </div>
+      <div class="sidebar-item" onclick="showTab('photos')" id="tab-photos">
+        <span class="sidebar-num">02</span> PHOTOS
+        <span class="sidebar-count" id="count-photo">—</span>
+      </div>
+      <div class="sidebar-item" onclick="showTab('notifications')" id="tab-notifications">
+        <span class="sidebar-num">03</span> NOTIFICATIONS
+        <span class="sidebar-count" id="count-notif">—</span>
+      </div>
+      <div class="sidebar-section" style="margin-top:auto">API</div>
+      <div class="sidebar-item" onclick="window.open(BASE_URL+'/docs','_blank')">
+        <span class="sidebar-num">→</span> SWAGGER DOCS
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Overview -->
+      <div id="view-overview">
+        <div class="stats-bar">
+          <div class="stat-cell">
+            <div class="stat-label">LOCATIONS</div>
+            <div class="stat-val" id="stat-loc">—</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">PHOTOS</div>
+            <div class="stat-val" id="stat-photo">—</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">NOTIFICATIONS</div>
+            <div class="stat-val" id="stat-notif">—</div>
+          </div>
+        </div>
+        <div id="overview-latest"></div>
+      </div>
+
+      <!-- Locations -->
+      <div id="view-locations" style="display:none">
+        <div class="table-header">
+          <span class="table-title">LOCATION LOG</span>
+          <button class="refresh-btn" onclick="loadLocations()">↻ REFRESH</button>
+        </div>
+        <div id="locations-content"><div class="loading-row"><span class="blink">LOADING_</span></div></div>
+      </div>
+
+      <!-- Photos -->
+      <div id="view-photos" style="display:none">
+        <div class="table-header">
+          <span class="table-title">PHOTO ARCHIVE</span>
+          <button class="refresh-btn" onclick="loadPhotos()">↻ REFRESH</button>
+        </div>
+        <div id="photos-content"><div class="loading-row"><span class="blink">LOADING_</span></div></div>
+      </div>
+
+      <!-- Notifications -->
+      <div id="view-notifications" style="display:none">
+        <div class="table-header">
+          <span class="table-title">NOTIFICATION LOG</span>
+          <button class="refresh-btn" onclick="loadNotifications()">↻ REFRESH</button>
+        </div>
+        <div id="notifications-content"><div class="loading-row"><span class="blink">LOADING_</span></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Photo modal -->
+<div class="modal-overlay" id="photo-modal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">PHOTO</span>
+      <button class="modal-close" onclick="document.getElementById('photo-modal').classList.remove('open')">✕</button>
+    </div>
+    <img class="modal-img" id="modal-img" src="" />
+  </div>
+</div>
+
+<script>
+  let BASE_URL = '', API_KEY = ''
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  async function login() {
+    BASE_URL = document.getElementById('api-url').value.replace(/\/$/, '')
+    API_KEY  = 'hybridpoc-secret-2025'
+    try {
+      const res = await api('/health', { noAuth: true })
+      if (res.status !== 'ok') throw new Error()
+      document.getElementById('login-screen').style.display = 'none'
+      document.getElementById('app').style.display = 'block'
+      document.getElementById('api-endpoint-label').textContent = BASE_URL
+      loadStats(); showTab('overview')
+    } catch(e) {
+      document.getElementById('login-error').style.display = 'block'
+    }
+  }
+
+  function logout() {
+    BASE_URL = ''; API_KEY = ''
+    document.getElementById('login-screen').style.display = 'flex'
+    document.getElementById('app').style.display = 'none'
+    document.getElementById('login-error').style.display = 'none'
+  }
+
+  // ── API helper ────────────────────────────────────────────────────────────
+  async function api(path, opts = {}) {
+    const headers = {}
+    if (opts.body) headers['Content-Type'] = 'application/json'
+    const res = await fetch(BASE_URL + path, {
+      method: opts.method || 'GET',
+      headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    })
+    if (!res.ok) throw new Error(res.statusText)
+    return res.json()
+  }
+
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  function showTab(name) {
+    ['overview','locations','photos','notifications'].forEach(t => {
+      document.getElementById('view-' + t).style.display = t === name ? 'block' : 'none'
+      document.getElementById('tab-' + t)?.classList.toggle('active', t === name)
+    })
+    if (name === 'locations')     loadLocations()
+    if (name === 'photos')        loadPhotos()
+    if (name === 'notifications') loadNotifications()
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const s = await api('/api/stats')
+      document.getElementById('stat-loc').textContent   = s.total_locations
+      document.getElementById('stat-photo').textContent = s.total_photos
+      document.getElementById('stat-notif').textContent = s.total_notifications
+      document.getElementById('count-loc').textContent   = s.total_locations
+      document.getElementById('count-photo').textContent = s.total_photos
+      document.getElementById('count-notif').textContent = s.total_notifications
+
+      let html = ''
+      if (s.latest_location) {
+        html += `<div style="padding:16px 20px;border-bottom:1px solid #e0e0e0">
+          <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;color:#888;margin-bottom:6px">LATEST LOCATION</div>
+          <div style="font-size:13px;font-weight:700">${s.latest_location.latitude.toFixed(6)}°, ${s.latest_location.longitude.toFixed(6)}°</div>
+          <div style="font-size:10px;color:#888;margin-top:3px">${s.latest_location.address || 'No address'} · ${fmt(s.latest_location.created_at)}</div>
+        </div>`
+      }
+      if (s.latest_notification) {
+        html += `<div style="padding:16px 20px;border-bottom:1px solid #e0e0e0">
+          <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;color:#888;margin-bottom:6px">LATEST NOTIFICATION</div>
+          <div style="font-size:13px;font-weight:700">${s.latest_notification.title}</div>
+          <div style="font-size:10px;color:#888;margin-top:3px">${s.latest_notification.body || ''} · ${fmt(s.latest_notification.created_at)}</div>
+        </div>`
+      }
+      document.getElementById('overview-latest').innerHTML = html || '<div class="empty"><div class="empty-icon">[ — ]</div><div class="empty-text">NO_DATA_YET</div><div class="empty-sub">Start the app and capture some data</div></div>'
+    } catch(e) {
+      document.getElementById('stat-loc').textContent = 'ERR'
+    }
+  }
+
+  // ── Locations ─────────────────────────────────────────────────────────────
+  async function loadLocations() {
+    document.getElementById('locations-content').innerHTML = '<div class="loading-row"><span class="blink">LOADING_</span></div>'
+    try {
+      const rows = await api('/api/locations?limit=100')
+      if (!rows.length) { document.getElementById('locations-content').innerHTML = empty('[ GPS ]', 'NO_LOCATION_DATA'); return }
+      document.getElementById('locations-content').innerHTML = `
+        <table>
+          <thead><tr>
+            <th>ID</th><th>LAT</th><th>LON</th><th>ACC</th><th>ADDRESS</th><th>DEVICE</th><th>TIME</th><th></th>
+          </tr></thead>
+          <tbody>${rows.map(r => `
+            <tr>
+              <td class="td-muted">${r.id}</td>
+              <td class="td-mono">${r.latitude.toFixed(6)}</td>
+              <td class="td-mono">${r.longitude.toFixed(6)}</td>
+              <td class="td-muted">±${r.accuracy ? Math.round(r.accuracy) : '?'}m</td>
+              <td style="font-size:10px;max-width:200px">${r.address || '—'}</td>
+              <td class="td-muted">${r.device_id || '—'}</td>
+              <td class="td-muted">${fmt(r.created_at)}</td>
+              <td><button class="delete-btn" onclick="del('locations',${r.id},loadLocations)">✕</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`
+    } catch(e) { document.getElementById('locations-content').innerHTML = '<div class="loading-row">ERROR LOADING DATA</div>' }
+  }
+
+  // ── Photos ────────────────────────────────────────────────────────────────
+  async function loadPhotos() {
+    document.getElementById('photos-content').innerHTML = '<div class="loading-row"><span class="blink">LOADING_</span></div>'
+    try {
+      const rows = await api('/api/photos?limit=100')
+      if (!rows.length) { document.getElementById('photos-content').innerHTML = empty('[ CAM ]', 'NO_PHOTO_DATA'); return }
+
+      // Fetch all photos with full data_url in parallel
+      const full = await Promise.all(rows.map(r => api(`/api/photos/${r.id}`)))
+
+      document.getElementById('photos-content').innerHTML = `<div class="photo-grid">${full.map(r => `
+        <div class="photo-cell" onclick="openPhotoUrl('${r.id}', \`${r.data_url}\`)">
+          <img src="${r.data_url}" class="photo-img" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#f0f0f0" />
+          <button class="photo-del" onclick="event.stopPropagation();del('photos',${r.id},loadPhotos)">✕</button>
+          <div class="photo-meta">
+            <div class="photo-id">IMG_${String(r.id).padStart(4,'0')}</div>
+            <div class="photo-size">${r.size_bytes ? (r.size_bytes/1024).toFixed(1)+'KB' : '—'}</div>
+            <div class="photo-id">${fmt(r.created_at)}</div>
+          </div>
+        </div>`).join('')}</div>`
+    } catch(e) {
+      console.error(e)
+      document.getElementById('photos-content').innerHTML = '<div class="loading-row">ERROR: ' + e.message + '</div>'
+    }
+  }
+
+  async function loadPhotoThumb(id) {
+    try {
+      const photo = await api(`/api/photos/${id}`)
+      const cells = document.querySelectorAll('.photo-cell')
+      cells.forEach(cell => {
+        if (cell.getAttribute('onclick')?.includes(`openPhoto(${id})`)) {
+          const placeholder = cell.querySelector('.photo-img')
+          const img = document.createElement('img')
+          img.src = photo.data_url
+          img.className = 'photo-img'
+          cell.replaceChild(img, placeholder)
+          cell.dataset.url = photo.data_url
+        }
+      })
+    } catch(e) {}
+  }
+
+  async function openPhoto(id) {
+    try {
+      const photo = await api(`/api/photos/${id}`)
+      document.getElementById('modal-title').textContent = `PHOTO · IMG_${String(id).padStart(4,'0')}`
+      document.getElementById('modal-img').src = photo.data_url
+      document.getElementById('photo-modal').classList.add('open')
+    } catch(e) {}
+  }
+
+  function openPhotoUrl(id, dataUrl) {
+    document.getElementById('modal-title').textContent = `PHOTO · IMG_${String(id).padStart(4,'0')}`
+    document.getElementById('modal-img').src = dataUrl
+    document.getElementById('photo-modal').classList.add('open')
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('photo-modal')) {
+      document.getElementById('photo-modal').classList.remove('open')
+    }
+  }
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+  async function loadNotifications() {
+    document.getElementById('notifications-content').innerHTML = '<div class="loading-row"><span class="blink">LOADING_</span></div>'
+    try {
+      const rows = await api('/api/notifications?limit=100')
+      if (!rows.length) { document.getElementById('notifications-content').innerHTML = empty('[ BELL ]', 'NO_NOTIFICATION_DATA'); return }
+      document.getElementById('notifications-content').innerHTML = `
+        <table>
+          <thead><tr>
+            <th>ID</th><th>TITLE</th><th>BODY</th><th>STATUS</th><th>DEVICE</th><th>TIME</th><th></th>
+          </tr></thead>
+          <tbody>${rows.map(r => `
+            <tr>
+              <td class="td-muted">${r.id}</td>
+              <td style="font-weight:700;font-size:11px">${r.title}</td>
+              <td style="font-size:10px;color:#555;max-width:200px">${r.body || '—'}</td>
+              <td><span class="tag ${r.status}">${r.status.toUpperCase()}</span></td>
+              <td class="td-muted">${r.device_id || '—'}</td>
+              <td class="td-muted">${fmt(r.created_at)}</td>
+              <td><button class="delete-btn" onclick="del('notifications',${r.id},loadNotifications)">✕</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`
+    } catch(e) { document.getElementById('notifications-content').innerHTML = '<div class="loading-row">ERROR LOADING DATA</div>' }
+  }
+
+  // ── Delete ────────────────────────────────────────────────────────────────
+  async function del(resource, id, reload) {
+    if (!confirm(`DELETE ${resource.toUpperCase()} #${id}?`)) return
+    try {
+      await api(`/api/${resource}/${id}`, { method: 'DELETE' })
+      await reload()
+      await loadStats()
+    } catch(e) { alert('DELETE FAILED') }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function fmt(iso) {
+    const d = new Date(iso + 'Z')
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString()
+  }
+
+  function empty(icon, text) {
+    return `<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-text">${text}</div><div class="empty-sub">No records found in database</div></div>`
+  }
+
+  // Allow Enter key on login
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') login()
+  })
+</script>
+</body>
+</html>

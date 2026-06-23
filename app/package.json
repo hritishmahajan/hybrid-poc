@@ -1,0 +1,30 @@
+{
+  "name": "hybrid-poc",
+  "version": "1.0.0",
+  "description": "Hybrid Mobile App POC – Cordova + Vue 3 + Quasar",
+  "author": "Hritish <hritishx@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:android": "npm run build && cd cordova && cordova build android",
+    "build:ios": "npm run build && cd cordova && cordova build ios",
+    "run:android": "npm run build && cd cordova && cordova run android",
+    "run:ios": "npm run build && cd cordova && cordova run ios",
+    "emulate:android": "npm run build && cd cordova && cordova emulate android",
+    "cordova:prepare": "cd cordova && cordova prepare"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.16.0",
+    "quasar": "^2.16.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@quasar/vite-plugin": "^1.7.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "sass": "^1.77.0",
+    "vite": "^5.3.0"
+  }
+}

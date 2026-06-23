@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!--
+      CSP: permissive for dev/browser mode.
+      Cordova native builds enforce their own stricter policy via config.xml.
+    -->
+    <meta http-equiv="Content-Security-Policy"
+      content="
+        default-src * data: blob: 'unsafe-inline' 'unsafe-eval';
+        script-src * 'unsafe-inline' 'unsafe-eval';
+        style-src * 'unsafe-inline';
+        img-src * data: blob:;
+        connect-src *;
+        font-src * data:;
+      " />
+
+    <title>HybridPOC</title>
+
+    <script>
+      if (document.URL.indexOf('http') === -1) {
+        var cs = document.createElement('script')
+        cs.src = 'cordova.js'
+        document.head.appendChild(cs)
+      }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" />
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

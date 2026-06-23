@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+  config.xml – Cordova project configuration
+  Docs: https://cordova.apache.org/docs/en/latest/config_ref/index.html
+-->
+<widget id="com.hritish.hybridpoc" version="1.0.0"
+  xmlns="http://www.w3.org/ns/widgets"
+  xmlns:cdv="http://cordova.apache.org/ns/1.0">
+
+  <name>HybridPOC</name>
+  <description>Hybrid Mobile App POC – Cordova + Vue 3 + Quasar</description>
+  <author email="hritishx@gmail.com" href="https://github.com/hritishmahajan">Hritish</author>
+
+  <!-- Vite build output goes into www/ -->
+  <content src="index.html" />
+
+  <!-- Universal CSP: tighten for production -->
+  <access origin="*" />
+  <allow-intent href="http://*/*" />
+  <allow-intent href="https://*/*" />
+  <allow-navigation href="https://nominatim.openstreetmap.org/*" />
+  <allow-navigation href="https://www.openstreetmap.org/*" />
+
+  <!-- iOS -->
+  <platform name="ios">
+    <preference name="WKWebViewOnly" value="true" />
+    <!-- Camera usage descriptions (required by App Store) -->
+    <edit-config target="NSCameraUsageDescription" file="*-Info.plist" mode="merge">
+      <string>HybridPOC uses the camera to capture photos.</string>
+    </edit-config>
+    <edit-config target="NSPhotoLibraryUsageDescription" file="*-Info.plist" mode="merge">
+      <string>HybridPOC reads your photo library to pick images.</string>
+    </edit-config>
+    <edit-config target="NSLocationWhenInUseUsageDescription" file="*-Info.plist" mode="merge">
+      <string>HybridPOC shows your location on the map.</string>
+    </edit-config>
+  </platform>
+
+  <!-- Android -->
+  <platform name="android">
+    <preference name="AndroidLaunchMode" value="singleTop" />
+    <preference name="GradleVersion" value="8.0" />
+    <preference name="AndroidGradlePluginVersion" value="8.1.0" />
+    <allow-intent href="market:*" />
+  </platform>
+
+  <!-- Plugins declared here so `cordova prepare` installs them automatically -->
+  <plugin name="cordova-plugin-device" spec="^3.0.0" />
+  <plugin name="cordova-plugin-camera" spec="^7.0.0">
+    <variable name="CAMERA_USAGE_DESCRIPTION" value="HybridPOC uses the camera." />
+    <variable name="PHOTOLIBRARY_USAGE_DESCRIPTION" value="HybridPOC accesses the photo library." />
+  </plugin>
+  <plugin name="cordova-plugin-geolocation" spec="^5.0.0" />
+  <plugin name="phonegap-plugin-push" spec="^4.0.0">
+    <variable name="SENDER_ID" value="YOUR_FIREBASE_SENDER_ID" />
+  </plugin>
+  <plugin name="cordova-plugin-local-notification" spec="^0.9.0" />
+
+  <!-- Global preferences -->
+  <preference name="DisallowOverscroll" value="true" />
+  <preference name="StatusBarOverlaysWebView" value="false" />
+  <preference name="BackupWebStorage" value="local" />
+  <preference name="SplashScreenDelay" value="3000" />
+</widget>

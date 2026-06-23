@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:      #FFFFFF;
+  --surface: #FFFFFF;
+  --border:  #000000;
+  --text:    #000000;
+  --muted:   #555555;
+  --accent:  #000000;
+  --tag-bg:  #000000;
+  --tag-text:#FFFFFF;
+  --mono:    'IBM Plex Mono', 'Space Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+body {
+  background: #fff !important;
+  color: #000 !important;
+  font-family: var(--mono) !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+.q-layout { background: #fff !important }
+.q-page   { background: #fff !important; padding-bottom: 72px !important }
+
+/* Header */
+.q-header .q-toolbar {
+  background: #000 !important;
+  border-bottom: 2px solid #000 !important;
+}
+.q-toolbar__title {
+  font-family: var(--mono) !important;
+  font-weight: 700 !important;
+  letter-spacing: 3px !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  color: #fff !important;
+}
+.q-btn--flat .q-icon { color: #fff !important }
+
+/* Footer / bottom nav */
+.q-footer { border-top: 2px solid #000 !important }
+.q-footer .q-tabs { background: #000 !important; height: 56px !important }
+.q-tab { color: #666 !important; font-family: var(--mono) !important; font-size: 9px !important; font-weight: 700 !important; letter-spacing: 1.5px !important; text-transform: uppercase !important }
+.q-tab--active { color: #fff !important; background: #333 !important }
+.q-tab__indicator { display: none !important }
+
+/* Cards */
+.q-card {
+  background: #fff !important;
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+
+/* Inputs */
+.q-field--outlined .q-field__control {
+  background: #fff !important;
+  border-radius: 0 !important;
+}
+.q-field--outlined .q-field__control::before {
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+}
+.q-field--outlined.q-field--focused .q-field__control::before {
+  border-color: #000 !important;
+  box-shadow: 3px 3px 0 #000 !important;
+}
+.q-field__label { color: #555 !important; font-family: var(--mono) !important; font-size: 11px !important; letter-spacing: 0.5px !important }
+.q-field__native { color: #000 !important; font-family: var(--mono) !important }
+
+/* Buttons */
+.q-btn {
+  border-radius: 0 !important;
+  font-family: var(--mono) !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  font-size: 11px !important;
+}
+
+/* Separator */
+.q-separator { background: #000 !important; height: 2px !important }
+
+/* Drawer */
+.q-drawer { background: #fff !important; border-right: 2px solid #000 !important }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px }
+::-webkit-scrollbar-thumb { background: #000 }
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+.anim-fade-up   { animation: fadeUp 0.2s ease forwards }
+.anim-fade-up-1 { animation: fadeUp 0.2s 0.04s ease both }
+.anim-fade-up-2 { animation: fadeUp 0.2s 0.08s ease both }
+.anim-fade-up-3 { animation: fadeUp 0.2s 0.12s ease both }
+.anim-fade-up-4 { animation: fadeUp 0.2s 0.16s ease both }

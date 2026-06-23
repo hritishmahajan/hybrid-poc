@@ -1,0 +1,15 @@
+node_modules/
+dist/
+cordova/www/
+cordova/platforms/
+cordova/plugins/
+.DS_Store
+*.log
+.env
+.env.local
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.db
