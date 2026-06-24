@@ -29,6 +29,27 @@
 
 ---
 
+## 🌐 Live on Vercel
+
+| | URL |
+|---|---|
+| **Frontend** | https://app-ten-iota-45.vercel.app |
+| **Backend / Admin** | https://hybrid-poc-server.vercel.app/admin |
+
+> **Note:** The backend uses SQLite. On Vercel's serverless platform, data resets between cold starts. For persistent storage, swap SQLite for a hosted database (e.g. Vercel Postgres or Supabase).
+
+### Connect the frontend to the deployed backend
+
+Open the app, tap **Settings** (or the gear icon on the Home page), paste:
+```
+https://hybrid-poc-server.vercel.app
+```
+Every capture (location, photo, notification) will now POST to the live server. Open `/admin` to see results.
+
+[![Deploy Frontend](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/hritishmahajan/hybrid-poc&root=app)
+
+---
+
 ## ⚡ Run it — share it — see results live
 
 > One Codespace hosts everything. You share the frontend link, anyone on any device opens it, and all their captured data appears in your admin dashboard in real time.
