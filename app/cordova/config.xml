@@ -40,7 +40,7 @@
   <platform name="android">
     <preference name="AndroidLaunchMode" value="singleTop" />
     <preference name="GradleVersion" value="8.0" />
-    <preference name="AndroidGradlePluginVersion" value="8.1.0" />
+    <preference name="AndroidGradlePluginVersion" value="8.1.1" />
     <allow-intent href="market:*" />
   </platform>
 
