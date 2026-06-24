@@ -8,13 +8,13 @@ if [ -n "$CODESPACE_NAME" ]; then
 fi
 
 echo "→ Starting FastAPI backend on :8000 ..."
-cd server && uvicorn main:app --host 0.0.0.0 --port 8000 --reload &
+(cd server && uvicorn main:app --host 0.0.0.0 --port 8000 --reload) &
 BACKEND_PID=$!
 
 sleep 2
 
 echo "→ Starting Vite frontend on :5173 ..."
-cd ../app && npm run dev -- --host &
+(cd app && npm run dev) &
 FRONTEND_PID=$!
 
 echo ""
