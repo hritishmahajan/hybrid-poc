@@ -86,6 +86,18 @@ jobs:
           name: app-debug-apk
           path: cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
 
+      - name: Create GitHub Release and upload APK
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Debug Build
+          body: |
+            Auto-built APK from the latest commit on `main`.
+            Connects to the live backend at https://hybrid-poc-server.vercel.app
+          files: cordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   # ──────────────────────────────────────────────────────
   # 3. iOS build (macOS runner, needs Apple certs in prod)
   # ──────────────────────────────────────────────────────

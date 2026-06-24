@@ -1,13 +1,13 @@
 // Posts location, photo, and notification events to the backend.
 // BASE_URL is read from localStorage so it can be set from the app UI at runtime.
-// Falls back to the build-time env var, then localhost for browser dev.
+// Falls back to the build-time env var, then the production Vercel backend.
 
 const API_KEY = import.meta.env.VITE_API_KEY || 'hybridpoc-secret-2025'
 
 function getBaseUrl() {
   return localStorage.getItem('server_url') ||
          import.meta.env.VITE_API_URL ||
-         'http://localhost:8000'
+         'https://hybrid-poc-server.vercel.app'
 }
 
 export function setServerUrl(url) {
