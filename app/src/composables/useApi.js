@@ -1,25 +1,50 @@
 // Posts location, photo, and notification events to the backend.
-// Designed to fail silently — the app works fine offline, the server is just bonus.
+// BASE_URL is read from localStorage so it can be set from the app UI at runtime.
+// Falls back to the build-time env var, then localhost for browser dev.
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const API_KEY  = import.meta.env.VITE_API_KEY  || 'hybridpoc-secret-2025'
+const API_KEY = import.meta.env.VITE_API_KEY || 'hybridpoc-secret-2025'
+
+function getBaseUrl() {
+  return localStorage.getItem('server_url') ||
+         import.meta.env.VITE_API_URL ||
+         'http://localhost:8000'
+}
+
+export function setServerUrl(url) {
+  localStorage.setItem('server_url', url.replace(/\/$/, ''))
+}
+
+export function getServerUrl() {
+  return getBaseUrl()
+}
 
 // Persist a device ID so the admin panel can tell devices apart across sessions
 const DEVICE_ID = (() => {
   let id = localStorage.getItem('device_id')
-  if (!id) { id = 'browser-' + Math.random().toString(36).slice(2, 10); localStorage.setItem('device_id', id) }
+  if (!id) { id = 'device-' + Math.random().toString(36).slice(2, 10); localStorage.setItem('device_id', id) }
   return id
 })()
 
 async function post(path, body) {
   try {
-    await fetch(`${BASE_URL}${path}`, {
+    const res = await fetch(`${getBaseUrl()}${path}`, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
       body   : JSON.stringify({ ...body, device_id: DEVICE_ID })
     })
+    return res.ok
   } catch (e) {
     console.warn('[API] Could not reach server:', e.message)
+    return false
+  }
+}
+
+export async function pingServer() {
+  try {
+    const res = await fetch(`${getBaseUrl()}/health`, { signal: AbortSignal.timeout(4000) })
+    return res.ok
+  } catch {
+    return false
   }
 }
 

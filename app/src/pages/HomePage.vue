@@ -22,8 +22,37 @@
         </div>
         <div class="br-status-divider" />
         <div class="br-status-item">
-          <span class="br-status-label">STATUS</span>
-          <span class="br-status-val br-status-ok">ACTIVE</span>
+          <span class="br-status-label">SERVER</span>
+          <span class="br-status-val" :class="serverOk ? 'br-status-ok' : 'br-status-err'">
+            {{ serverOk === null ? 'CHECKING' : serverOk ? 'CONNECTED' : 'OFFLINE' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Server config -->
+      <div class="br-section-header anim-fade-up-2">
+        <span class="br-section-num">00</span>
+        <span class="br-section-title">SERVER</span>
+      </div>
+      <div class="br-server-block anim-fade-up-2">
+        <div class="br-server-label">BACKEND URL</div>
+        <div class="br-server-row">
+          <input
+            v-model="serverInput"
+            class="br-server-input"
+            placeholder="https://your-codespace-8000.app.github.dev"
+            @keydown.enter="saveServer"
+          />
+          <button class="br-server-btn" @click="saveServer">SAVE</button>
+        </div>
+        <div class="br-server-hint" v-if="serverOk === false">
+          ⚠ Can't reach server. Check the URL and make sure the backend is running.
+        </div>
+        <div class="br-server-hint br-hint-ok" v-else-if="serverOk === true">
+          ✓ Connected — data will appear in the admin dashboard.
+        </div>
+        <div class="br-server-hint" v-else>
+          Paste your Codespaces port 8000 URL above. Data from camera, GPS, and notifications will be sent there.
         </div>
       </div>
 
@@ -73,11 +102,31 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { getServerUrl, setServerUrl, pingServer } from '@/composables/useApi'
+
 const $router = useRouter()
 const isNative = computed(() => !!window.cordova)
 const platform = computed(() => window.device?.platform ?? navigator.platform.split(' ')[0])
+
+const serverInput = ref(getServerUrl())
+const serverOk    = ref(null)
+
+async function checkServer() {
+  serverOk.value = null
+  serverOk.value = await pingServer()
+}
+
+async function saveServer() {
+  const url = serverInput.value.trim()
+  if (!url) return
+  setServerUrl(url)
+  serverInput.value = url
+  await checkServer()
+}
+
+onMounted(checkServer)
 
 const deviceCards = computed(() => {
   const d = window.device
@@ -114,7 +163,28 @@ const stack = ['VUE 3', 'QUASAR 2', 'CORDOVA', 'VITE 5', 'ES6+', 'LEAFLET']
 .br-status-divider { width: 2px; background: #000 }
 .br-status-label { display: block; font-family: 'IBM Plex Mono',monospace; font-size: 8px; font-weight: 700; letter-spacing: 1.5px; color: #888; margin-bottom: 3px }
 .br-status-val   { font-family: 'IBM Plex Mono',monospace; font-size: 11px; font-weight: 700; color: #000 }
-.br-status-ok    { color: #000 }
+.br-status-ok    { color: #16a34a }
+.br-status-err   { color: #dc2626 }
+
+/* Server config */
+.br-server-block { padding: 14px 16px; border-bottom: 2px solid #000; background: #fafafa }
+.br-server-label { font-family: 'IBM Plex Mono',monospace; font-size: 8px; font-weight: 700; letter-spacing: 1.5px; color: #888; margin-bottom: 8px }
+.br-server-row   { display: flex; gap: 8px }
+.br-server-input {
+  flex: 1; border: 2px solid #000; padding: 10px 12px;
+  font-family: 'IBM Plex Mono',monospace; font-size: 11px;
+  outline: none; background: #fff; min-width: 0;
+}
+.br-server-input:focus { box-shadow: 3px 3px 0 #000 }
+.br-server-btn {
+  padding: 10px 16px; background: #000; color: #fff; border: none;
+  font-family: 'IBM Plex Mono',monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; cursor: pointer; white-space: nowrap;
+  box-shadow: 3px 3px 0 #555;
+}
+.br-server-btn:active { transform: translate(2px,2px); box-shadow: none }
+.br-server-hint    { font-family: 'IBM Plex Mono',monospace; font-size: 10px; color: #888; margin-top: 8px }
+.br-hint-ok        { color: #16a34a }
 
 /* Section headers */
 .br-section-header { display: flex; align-items: center; gap: 10px; background: #000; padding: 8px 16px }
